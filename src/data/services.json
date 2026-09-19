@@ -1,0 +1,29 @@
+[
+  {
+    "id": 1,
+    "name": "Consulta médica",
+    "description": "Consulta médica general",
+    "duration": 30,
+    "price": 50,
+    "category": "Salud",
+    "available": true
+  },
+  {
+    "id": 2,
+    "name": "Consulta odontológica",
+    "description": "Evaluación odontológica general",
+    "duration": 45,
+    "price": 70,
+    "category": "Odontología",
+    "available": true
+  },
+  {
+    "id": 3,
+    "name": "Clase de guitarra",
+    "description": "Clase individual de guitarra para principiantes",
+    "duration": 60,
+    "price": 90,
+    "category": "Música",
+    "available": false
+  }
+]
