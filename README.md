@@ -1,16 +1,19 @@
-# Administrador de Servicios
+# API REST de Servicios
 
-Proyecto de Node.js para administrar servicios de un sistema de turnos y reservas.
+API REST desarrollada con Node.js y Express para administrar servicios.
 
-## Descripción
+## Tecnologías
 
-Este proyecto implementa un administrador de servicios utilizando Node.js y módulos ES.
-
-Los servicios se almacenan en un archivo JSON y pueden ser consultados, agregados, modificados y eliminados mediante la clase `ServiceManager`.
+- Node.js
+- Express
+- JavaScript
+- ES Modules
+- dotenv
+- JSON
 
 ## Instalación
 
-Para instalar las dependencias del proyecto:
+Clonar el repositorio e instalar las dependencias:
 
 ```bash
 npm install
