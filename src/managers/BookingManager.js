@@ -1,5 +1,6 @@
 import fs from 'fs/promises';
 import path from 'path';
+import ServiceManager from './ServiceManager.js';
 
 class BookingManager {
     constructor() {
@@ -9,6 +10,8 @@ class BookingManager {
             'data',
             'bookings.json'
         );
+
+        this.serviceManager = new ServiceManager();
     }
 
     async getBookings() {
@@ -78,18 +81,9 @@ class BookingManager {
             return null;
         }
 
-        const services = await fs.readFile(
-            path.join(process.cwd(), 'src', 'data', 'services.json'),
-            'utf-8'
-        );
+        const service = await this.serviceManager.getServiceById(serviceId);
 
-        const parsedServices = JSON.parse(services);
-
-        const serviceExists = parsedServices.some(
-            service => service.id === Number(serviceId)
-        );
-
-        if (!serviceExists) {
+        if (!service) {
             throw new Error('Servicio no encontrado');
         }
 

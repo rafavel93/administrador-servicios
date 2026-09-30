@@ -1,85 +1,22 @@
 import { Router } from 'express';
-import ServiceManager from '../managers/ServiceManager.js';
+import {
+    getServices,
+    getServiceById,
+    createService,
+    updateService,
+    deleteService
+} from '../controllers/services.controller.js';
 
 const router = Router();
-const serviceManager = new ServiceManager();
 
-router.get('/', async (req, res) => {
-    const { category, available } = req.query;
+router.get('/', getServices);
 
-    let services = await serviceManager.getServices();
+router.get('/:sid', getServiceById);
 
-    if (category) {
-        services = services.filter(
-            service => service.category.toLowerCase() === category.toLowerCase()
-        );
-    }
+router.post('/', createService);
 
-    if (available !== undefined) {
-        services = services.filter(
-            service => service.available === (available === 'true')
-        );
-    }
+router.put('/:sid', updateService);
 
-    res.status(200).json(services);
-});
-
-router.get('/:sid', async (req, res) => {
-    const { sid } = req.params;
-
-    const service = await serviceManager.getServiceById(sid);
-
-    if (!service) {
-        return res.status(404).json({
-            error: 'Servicio no encontrado'
-        });
-    }
-
-    res.status(200).json(service);
-});
-
-router.post('/', async (req, res) => {
-    try {
-        const newService = await serviceManager.addService(req.body);
-
-        res.status(201).json(newService);
-    } catch (error) {
-        res.status(400).json({
-            error: error.message
-        });
-    }
-});
-
-router.put('/:sid', async (req, res) => {
-    const { sid } = req.params;
-    const { id, ...updatedData } = req.body;
-
-    const updatedService = await serviceManager.updateService(
-        sid,
-        updatedData
-    );
-
-    if (!updatedService) {
-        return res.status(404).json({
-            error: 'Servicio no encontrado'
-        });
-    }
-
-    res.status(200).json(updatedService);
-});
-
-router.delete('/:sid', async (req, res) => {
-    const { sid } = req.params;
-
-    const deletedService = await serviceManager.deleteService(sid);
-
-    if (!deletedService) {
-        return res.status(404).json({
-            error: 'Servicio no encontrado'
-        });
-    }
-
-    res.status(200).json(deletedService);
-});
+router.delete('/:sid', deleteService);
 
 export default router;
