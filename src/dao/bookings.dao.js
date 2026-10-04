@@ -12,8 +12,12 @@ class BookingsDAO {
     }
 
     async getAll() {
-        const data = await fs.readFile(this.filePath, 'utf-8');
-        return JSON.parse(data);
+        try {
+            const data = await fs.readFile(this.filePath, 'utf-8');
+            return JSON.parse(data);
+        } catch (error) {
+            throw new Error('No se pudo leer el archivo de reservas');
+        }
     }
 
     async getById(id) {
@@ -25,46 +29,54 @@ class BookingsDAO {
     }
 
     async create(booking) {
-        const bookings = await this.getAll();
+        try {
+            const bookings = await this.getAll();
 
-        const newId = bookings.length > 0
-            ? Math.max(...bookings.map(item => item.id)) + 1
-            : 1;
+            const newId = bookings.length > 0
+                ? Math.max(...bookings.map(item => item.id)) + 1
+                : 1;
 
-        const newBooking = {
-            ...booking,
-            id: newId
-        };
+            const newBooking = {
+                ...booking,
+                id: newId
+            };
 
-        bookings.push(newBooking);
+            bookings.push(newBooking);
 
-        await fs.writeFile(
-            this.filePath,
-            JSON.stringify(bookings, null, 2)
-        );
+            await fs.writeFile(
+                this.filePath,
+                JSON.stringify(bookings, null, 2)
+            );
 
-        return newBooking;
+            return newBooking;
+        } catch (error) {
+            throw new Error('No se pudo guardar la reserva');
+        }
     }
 
     async update(id, updatedBooking) {
-        const bookings = await this.getAll();
+        try {
+            const bookings = await this.getAll();
 
-        const index = bookings.findIndex(
-            booking => booking.id === Number(id)
-        );
+            const index = bookings.findIndex(
+                booking => booking.id === Number(id)
+            );
 
-        if (index === -1) {
-            return null;
+            if (index === -1) {
+                return null;
+            }
+
+            bookings[index] = updatedBooking;
+
+            await fs.writeFile(
+                this.filePath,
+                JSON.stringify(bookings, null, 2)
+            );
+
+            return updatedBooking;
+        } catch (error) {
+            throw new Error('No se pudo actualizar la reserva');
         }
-
-        bookings[index] = updatedBooking;
-
-        await fs.writeFile(
-            this.filePath,
-            JSON.stringify(bookings, null, 2)
-        );
-
-        return updatedBooking;
     }
 }
 
