@@ -1,12 +1,10 @@
-import BookingManager from '../managers/BookingManager.js';
-import ServiceManager from '../managers/ServiceManager.js';
+import BookingsService from '../services/bookings.service.js';
 
-const bookingManager = new BookingManager();
-const serviceManager = new ServiceManager();
+const bookingsService = new BookingsService();
 
 export const createBooking = async (req, res) => {
     try {
-        const newBooking = await bookingManager.createBooking(req.body);
+        const newBooking = await bookingsService.createBooking(req.body);
 
         res.status(201).json(newBooking);
     } catch (error) {
@@ -20,7 +18,7 @@ export const getBookingById = async (req, res) => {
     try {
         const { bid } = req.params;
 
-        const booking = await bookingManager.getBookingById(bid);
+        const booking = await bookingsService.getBookingById(bid);
 
         if (!booking) {
             return res.status(404).json({
@@ -40,29 +38,25 @@ export const addServiceToBooking = async (req, res) => {
     try {
         const { bid, sid } = req.params;
 
-        const booking = await bookingManager.getBookingById(bid);
+        const updatedBooking = await bookingsService.addServiceToBooking(
+            bid,
+            sid
+        );
 
-        if (!booking) {
+        if (!updatedBooking) {
             return res.status(404).json({
                 error: 'Reserva no encontrada'
             });
         }
 
-        const service = await serviceManager.getServiceById(sid);
-
-        if (!service) {
+        res.status(200).json(updatedBooking);
+    } catch (error) {
+        if (error.message === 'Servicio no encontrado') {
             return res.status(404).json({
-                error: 'Servicio no encontrado'
+                error: error.message
             });
         }
 
-        const updatedBooking = await bookingManager.addServiceToBooking(
-            bid,
-            sid
-        );
-
-        res.status(200).json(updatedBooking);
-    } catch (error) {
         res.status(500).json({
             error: 'Error al agregar el servicio a la reserva'
         });
