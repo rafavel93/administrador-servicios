@@ -1,3 +1,5 @@
+
+import mongoose from 'mongoose';
 import ServicesDAO from '../dao/services.dao.js';
 
 class ServicesRepository {
@@ -5,11 +7,19 @@ class ServicesRepository {
         this.dao = new ServicesDAO();
     }
 
+    isValidId(id) {
+        return mongoose.isValidObjectId(id);
+    }
+
     async getAll() {
         return await this.dao.getAll();
     }
 
     async getById(id) {
+        if (!this.isValidId(id)) {
+            return null;
+        }
+
         return await this.dao.getById(id);
     }
 
@@ -18,10 +28,18 @@ class ServicesRepository {
     }
 
     async update(id, service) {
+        if (!this.isValidId(id)) {
+            return null;
+        }
+
         return await this.dao.update(id, service);
     }
 
     async delete(id) {
+        if (!this.isValidId(id)) {
+            return null;
+        }
+
         return await this.dao.delete(id);
     }
 }

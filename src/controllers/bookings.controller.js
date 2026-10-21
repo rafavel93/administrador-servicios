@@ -1,3 +1,4 @@
+
 import BookingsService from '../services/bookings.service.js';
 
 const bookingsService = new BookingsService();
@@ -6,9 +7,9 @@ export const createBooking = async (req, res) => {
     try {
         const newBooking = await bookingsService.createBooking(req.body);
 
-        res.status(201).json(newBooking);
+        return res.status(201).json(newBooking);
     } catch (error) {
-        res.status(400).json({
+        return res.status(400).json({
             error: error.message
         });
     }
@@ -17,7 +18,6 @@ export const createBooking = async (req, res) => {
 export const getBookingById = async (req, res) => {
     try {
         const { bid } = req.params;
-
         const booking = await bookingsService.getBookingById(bid);
 
         if (!booking) {
@@ -26,9 +26,9 @@ export const getBookingById = async (req, res) => {
             });
         }
 
-        res.status(200).json(booking);
+        return res.status(200).json(booking);
     } catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             error: 'Error al obtener la reserva'
         });
     }
@@ -45,11 +45,11 @@ export const addServiceToBooking = async (req, res) => {
 
         if (!updatedBooking) {
             return res.status(404).json({
-                error: 'Reserva no encontrada'
+                error: 'Reserva o servicio no encontrado'
             });
         }
 
-        res.status(200).json(updatedBooking);
+        return res.status(200).json(updatedBooking);
     } catch (error) {
         if (error.message === 'Servicio no encontrado') {
             return res.status(404).json({
@@ -57,8 +57,8 @@ export const addServiceToBooking = async (req, res) => {
             });
         }
 
-        res.status(500).json({
-            error: 'Error al agregar el servicio a la reserva'
+        return res.status(400).json({
+            error: error.message
         });
     }
 };

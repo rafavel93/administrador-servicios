@@ -1,3 +1,4 @@
+
 import ServicesRepository from '../repositories/services.repository.js';
 
 class ServicesService {
@@ -13,7 +14,7 @@ class ServicesService {
         if (category) {
             services = services.filter(
                 service =>
-                    service.category.toLowerCase() === category.toLowerCase()
+                    service.category?.toLowerCase() === category.toLowerCase()
             );
         }
 
@@ -48,18 +49,7 @@ class ServicesService {
             throw new Error('Faltan campos obligatorios');
         }
 
-        const services = await this.repository.getAll();
-
-        const newId = services.length > 0
-            ? Math.max(...services.map(service => service.id)) + 1
-            : 1;
-
-        const newService = {
-            ...serviceData,
-            id: newId
-        };
-
-        return await this.repository.create(newService);
+        return await this.repository.create(serviceData);
     }
 
     async updateService(id, updatedData) {
@@ -69,16 +59,7 @@ class ServicesService {
             return null;
         }
 
-        const updatedService = {
-            ...service,
-            ...updatedData,
-            id: service.id
-        };
-
-        return await this.repository.update(
-            id,
-            updatedService
-        );
+        return await this.repository.update(id, updatedData);
     }
 
     async deleteService(id) {

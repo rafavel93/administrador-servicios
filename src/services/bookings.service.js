@@ -1,3 +1,4 @@
+
 import BookingsRepository from '../repositories/bookings.repository.js';
 import ServicesRepository from '../repositories/services.repository.js';
 
@@ -53,23 +54,46 @@ class BookingsService {
             throw new Error('Servicio no encontrado');
         }
 
-        const existingService = booking.services.find(
-            item => item.service === Number(serviceId)
-        );
+        const existingService = booking.services.find(item => {
+            const currentServiceId =
+                item.service?._id?.toString() ??
+                item.service?.toString();
 
-        if (existingService) {
-            existingService.quantity += 1;
-        } else {
-            booking.services.push({
-                service: Number(serviceId),
-                quantity: 1
-            });
-        }
+            return currentServiceId === service._id.toString();
+        });
 
-        return await this.repository.update(
-            bookingId,
-            booking
-        );
+        const updatedServices = existingService
+            ? booking.services.map(item => {
+                const currentServiceId =
+                    item.service?._id?.toString() ??
+                    item.service?.toString();
+
+                if (currentServiceId === service._id.toString()) {
+                    return {
+                        service: service._id,
+                        quantity: item.quantity + 1
+                    };
+                }
+
+                return {
+                    service: currentServiceId,
+                    quantity: item.quantity
+                };
+            })
+            : [
+                ...booking.services.map(item => ({
+                    service: item.service?._id ?? item.service,
+                    quantity: item.quantity
+                })),
+                {
+                    service: service._id,
+                    quantity: 1
+                }
+            ];
+
+        return await this.repository.update(bookingId, {
+            services: updatedServices
+        });
     }
 }
 

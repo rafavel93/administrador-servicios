@@ -1,3 +1,4 @@
+
 import ServicesService from '../services/services.service.js';
 
 const servicesService = new ServicesService();
@@ -11,9 +12,9 @@ export const getServices = async (req, res) => {
             available
         });
 
-        res.status(200).json(services);
+        return res.status(200).json(services);
     } catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             error: 'Error al obtener los servicios'
         });
     }
@@ -22,7 +23,6 @@ export const getServices = async (req, res) => {
 export const getServiceById = async (req, res) => {
     try {
         const { sid } = req.params;
-
         const service = await servicesService.getServiceById(sid);
 
         if (!service) {
@@ -31,9 +31,9 @@ export const getServiceById = async (req, res) => {
             });
         }
 
-        res.status(200).json(service);
+        return res.status(200).json(service);
     } catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             error: 'Error al obtener el servicio'
         });
     }
@@ -43,9 +43,9 @@ export const createService = async (req, res) => {
     try {
         const newService = await servicesService.createService(req.body);
 
-        res.status(201).json(newService);
+        return res.status(201).json(newService);
     } catch (error) {
-        res.status(400).json({
+        return res.status(400).json({
             error: error.message
         });
     }
@@ -54,7 +54,7 @@ export const createService = async (req, res) => {
 export const updateService = async (req, res) => {
     try {
         const { sid } = req.params;
-        const { id, ...updatedData } = req.body;
+        const { _id, id, ...updatedData } = req.body;
 
         const updatedService = await servicesService.updateService(
             sid,
@@ -67,9 +67,9 @@ export const updateService = async (req, res) => {
             });
         }
 
-        res.status(200).json(updatedService);
+        return res.status(200).json(updatedService);
     } catch (error) {
-        res.status(400).json({
+        return res.status(400).json({
             error: error.message
         });
     }
@@ -78,7 +78,6 @@ export const updateService = async (req, res) => {
 export const deleteService = async (req, res) => {
     try {
         const { sid } = req.params;
-
         const deletedService = await servicesService.deleteService(sid);
 
         if (!deletedService) {
@@ -87,9 +86,9 @@ export const deleteService = async (req, res) => {
             });
         }
 
-        res.status(200).json(deletedService);
+        return res.status(200).json(deletedService);
     } catch (error) {
-        res.status(500).json({
+        return res.status(500).json({
             error: 'Error al eliminar el servicio'
         });
     }
