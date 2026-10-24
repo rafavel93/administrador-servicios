@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 import servicesRouter from './routes/services.router.js';
 import bookingsRouter from './routes/bookings.router.js';
+import messagesRouter from './routes/messages.router.js';
 import viewsRouter from './routes/views.router.js';
 
 const app = express();
@@ -27,6 +28,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/api/services', servicesRouter);
 app.use('/api/bookings', bookingsRouter);
+app.use('/api/messages', messagesRouter);
 app.use('/views', viewsRouter);
 
 export default app;
