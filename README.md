@@ -233,3 +233,65 @@ src/
 ## Autor
 
 Rafael Velázquez
+
+
+## Vistas con Handlebars
+
+El proyecto incorpora vistas renderizadas desde el servidor mediante Express Handlebars.
+
+### Servicios
+
+`GET /views/services`
+
+Muestra los servicios registrados en MongoDB con nombre, descripción, duración, precio, categoría y disponibilidad.
+
+### Disponibilidad
+
+`GET /views/availability`
+
+Muestra los servicios que tienen el campo `available` en `true`.
+
+Las vistas utilizan el controller de vistas y la arquitectura existente para obtener los datos desde MongoDB. No se utilizan datos de ejemplo hardcodeados en las plantillas.
+
+## Comunicación en tiempo real con Socket.io
+
+El servidor HTTP comparte la instancia de Express con Socket.io.
+
+Cuando se crea un servicio correctamente mediante:
+
+`POST /api/services`
+
+el servidor emite el evento `service:created` con los datos del nuevo servicio.
+
+El cliente ubicado en `src/public/js/socket.js` escucha ese evento y actualiza las tarjetas de las vistas sin recargar la página.
+
+## Tecnologías adicionales
+
+- Express Handlebars: renderizado de vistas del lado del servidor.
+- Socket.io: comunicación en tiempo real entre el servidor y los navegadores.
+- CSS: estilos adaptables para las vistas.
+- JavaScript del lado del cliente: actualización dinámica de los listados.
+
+## Estructura adicional de la Entrega 7
+
+```text
+src/
+├── config/
+│   └── socket.js
+├── controllers/
+│   └── views.controller.js
+├── routes/
+│   └── views.router.js
+├── views/
+│   ├── layouts/
+│   │   └── main.handlebars
+│   ├── services.handlebars
+│   └── availability.handlebars
+└── public/
+    ├── css/
+    │   └── styles.css
+    └── js/
+        └── socket.js
+```
+
+La API REST existente se mantiene disponible junto con las nuevas vistas.

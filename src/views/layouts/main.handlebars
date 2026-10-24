@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}} | Sistema de Turnos y Reservas</title>
+    <link rel="stylesheet" href="/css/styles.css">
+    <script src="/socket.io/socket.io.js" defer></script>
+    <script src="/js/socket.js" defer></script>
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <h1>Sistema de Turnos y Reservas</h1>
+            <nav>
+                <a href="/views/services">Servicios</a>
+                <a href="/views/availability">Disponibilidad</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        {{{body}}}
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <p>Sistema Backend de Turnos y Reservas</p>
+        </div>
+    </footer>
+</body>
+</html>

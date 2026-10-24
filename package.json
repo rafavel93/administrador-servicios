@@ -1,7 +1,7 @@
 {
   "name": "administrador-servicios",
   "version": "1.0.0",
-  "description": "API REST de servicios y reservas con Node.js, Express y FileSystem",
+  "description": "Sistema Backend de Turnos y Reservas con Express, MongoDB, Handlebars y Socket.io",
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
@@ -14,6 +14,8 @@
   "dependencies": {
     "dotenv": "^18.0.1",
     "express": "^5.2.1",
-    "mongoose": "^9.11.2"
+    "express-handlebars": "^9.0.2",
+    "mongoose": "^9.11.2",
+    "socket.io": "^4.8.4"
   }
 }

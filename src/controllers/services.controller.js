@@ -1,5 +1,5 @@
-
 import ServicesService from '../services/services.service.js';
+import { getSocketIO } from '../config/socket.js';
 
 const servicesService = new ServicesService();
 
@@ -42,6 +42,8 @@ export const getServiceById = async (req, res) => {
 export const createService = async (req, res) => {
     try {
         const newService = await servicesService.createService(req.body);
+
+        getSocketIO().emit('service:created', newService);
 
         return res.status(201).json(newService);
     } catch (error) {

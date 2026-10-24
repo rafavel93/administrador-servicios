@@ -1,0 +1,47 @@
+<section class="page-heading">
+    <h2>Servicios disponibles</h2>
+    <p>Consultá los servicios registrados en el sistema.</p>
+</section>
+
+<section id="services-list" class="services-grid">
+    {{#each services}}
+        <article class="service-card" data-service-id="{{_id}}">
+            <h3>{{name}}</h3>
+
+            <p class="service-description">
+                {{description}}
+            </p>
+
+            <dl>
+                <div>
+                    <dt>Duración</dt>
+                    <dd>{{duration}} minutos</dd>
+                </div>
+                <div>
+                    <dt>Precio</dt>
+                    <dd>R$ {{price}}</dd>
+                </div>
+                <div>
+                    <dt>Categoría</dt>
+                    <dd>{{category}}</dd>
+                </div>
+                <div>
+                    <dt>Disponibilidad</dt>
+                    <dd>
+                        {{#if available}}
+                            <span class="status status-available">Disponible</span>
+                        {{else}}
+                            <span class="status status-unavailable">No disponible</span>
+                        {{/if}}
+                    </dd>
+                </div>
+            </dl>
+        </article>
+    {{else}}
+        <p id="empty-services" class="empty-message">
+            Todavía no hay servicios registrados.
+        </p>
+    {{/each}}
+</section>
+
+<p id="socket-notice" class="socket-notice" role="status" aria-live="polite"></p>
