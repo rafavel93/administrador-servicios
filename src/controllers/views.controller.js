@@ -4,11 +4,11 @@ const servicesService = new ServicesService();
 
 export const getServicesView = async (req, res) => {
     try {
-        const services = await servicesService.getServices();
+        const result = await servicesService.getServices();
 
         res.render('services', {
             title: 'Servicios disponibles',
-            services
+            services: result.payload
         });
     } catch (error) {
         console.error('Error al cargar la vista de servicios:', error.message);
@@ -18,13 +18,13 @@ export const getServicesView = async (req, res) => {
 
 export const getAvailabilityView = async (req, res) => {
     try {
-        const services = await servicesService.getServices({
+        const result = await servicesService.getServices({
             available: 'true'
         });
 
         res.render('availability', {
             title: 'Disponibilidad',
-            services
+            services: result.payload
         });
     } catch (error) {
         console.error('Error al cargar la disponibilidad:', error.message);

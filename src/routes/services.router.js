@@ -1,4 +1,5 @@
 import { Router } from 'express';
+
 import {
     getServices,
     getServiceById,
@@ -7,15 +8,23 @@ import {
     deleteService
 } from '../controllers/services.controller.js';
 
+import { validate } from '../middlewares/validate.middleware.js';
+
+import {
+    createServiceSchema,
+    updateServiceSchema,
+    serviceQuerySchema
+} from '../validators/service.validator.js';
+
 const router = Router();
 
-router.get('/', getServices);
+router.get('/', validate(serviceQuerySchema, 'query'), getServices);
 
 router.get('/:sid', getServiceById);
 
-router.post('/', createService);
+router.post('/', validate(createServiceSchema), createService);
 
-router.put('/:sid', updateService);
+router.put('/:sid', validate(updateServiceSchema), updateService);
 
 router.delete('/:sid', deleteService);
 

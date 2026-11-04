@@ -1,9 +1,38 @@
-
 import Service from '../models/service.model.js';
 
 class ServicesDAO {
-    async getAll() {
-        return await Service.find().lean();
+    async getAll(filters = {}, options = {}) {
+        const {
+            page = 1,
+            limit = 10,
+            sortBy = 'name',
+            order = 'asc'
+        } = options;
+
+        const skip = (page - 1) * limit;
+        const sortOrder = order === 'desc' ? -1 : 1;
+
+        const [services, totalResults] = await Promise.all([
+            Service.find(filters)
+                .sort({ [sortBy]: sortOrder })
+                .skip(skip)
+                .limit(limit)
+                .lean(),
+
+            Service.countDocuments(filters)
+        ]);
+
+        const totalPages = Math.ceil(totalResults / limit);
+
+        return {
+            payload: services,
+            totalResults,
+            page,
+            limit,
+            totalPages,
+            hasPrevPage: page > 1,
+            hasNextPage: page < totalPages
+        };
     }
 
     async getById(id) {

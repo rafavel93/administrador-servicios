@@ -1,5 +1,6 @@
 const socket = io();
 
+// CREACIÓN
 socket.on('service:created', (service) => {
     const notice = document.getElementById('socket-notice');
 
@@ -14,6 +15,37 @@ socket.on('service:created', (service) => {
     }
 });
 
+// EDICIÓN
+socket.on('service:updated', (service) => {
+    const notice = document.getElementById('socket-notice');
+
+    if (notice) {
+        notice.textContent = `Servicio actualizado: ${service.name}`;
+    }
+
+    removeServiceCard('services-list', service._id);
+    removeServiceCard('availability-list', service._id);
+
+    addServiceCard('services-list', service);
+
+    if (service.available) {
+        addServiceCard('availability-list', service);
+    }
+});
+
+// ELIMINACIÓN
+socket.on('service:deleted', (service) => {
+    const notice = document.getElementById('socket-notice');
+
+    if (notice) {
+        notice.textContent = `Servicio eliminado: ${service.name}`;
+    }
+
+    removeServiceCard('services-list', service._id);
+    removeServiceCard('availability-list', service._id);
+});
+
+// AGREGAR TARJETA
 function addServiceCard(containerId, service) {
     const container = document.getElementById(containerId);
 
@@ -21,7 +53,6 @@ function addServiceCard(containerId, service) {
         return;
     }
 
-    // Evitar duplicar un servicio que ya esté en la vista.
     if (
         service._id &&
         container.querySelector(`[data-service-id="${service._id}"]`)
@@ -80,6 +111,43 @@ function addServiceCard(containerId, service) {
     container.prepend(card);
 }
 
+// ELIMINAR TARJETA
+function removeServiceCard(containerId, serviceId) {
+    const container = document.getElementById(containerId);
+
+    if (!container || !serviceId) {
+        return;
+    }
+
+    const card = container.querySelector(
+        `[data-service-id="${serviceId}"]`
+    );
+
+    if (card) {
+        card.remove();
+    }
+
+    updateEmptyMessage(container);
+}
+
+// ACTUALIZAR MENSAJE DE LISTA VACÍA
+function updateEmptyMessage(container) {
+    const hasCards = container.querySelector('.service-card');
+
+    if (!hasCards && !container.querySelector('.empty-message')) {
+        const emptyMessage = document.createElement('p');
+        emptyMessage.className = 'empty-message';
+
+        emptyMessage.textContent =
+            container.id === 'availability-list'
+                ? 'No hay servicios disponibles.'
+                : 'No hay servicios registrados.';
+
+        container.appendChild(emptyMessage);
+    }
+}
+
+// AGREGAR DETALLES
 function addDetail(container, label, value) {
     const row = document.createElement('div');
     const term = document.createElement('dt');

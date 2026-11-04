@@ -1,4 +1,3 @@
-
 import mongoose from 'mongoose';
 import ServicesDAO from '../dao/services.dao.js';
 
@@ -11,8 +10,8 @@ class ServicesRepository {
         return mongoose.isValidObjectId(id);
     }
 
-    async getAll() {
-        return await this.dao.getAll();
+    async getAll(filters = {}, options = {}) {
+        return await this.dao.getAll(filters, options);
     }
 
     async getById(id) {

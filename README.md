@@ -1,6 +1,6 @@
 # API REST de Servicios y Reservas
 
-API REST desarrollada con Node.js, Express y MongoDB Atlas para gestionar servicios, reservas y mensajes. Utiliza Mongoose como ODM y una arquitectura en capas. Incorpora vistas renderizadas con Express Handlebars y actualizaciones en tiempo real mediante Socket.io.
+API REST desarrollada con Node.js, Express y MongoDB Atlas para gestionar servicios, reservas y mensajes. Utiliza Mongoose como ODM, Zod para la validación de datos y una arquitectura en capas. Incorpora vistas renderizadas con Express Handlebars y actualizaciones en tiempo real mediante Socket.io.
 
 ## Tecnologías
 
@@ -8,6 +8,7 @@ API REST desarrollada con Node.js, Express y MongoDB Atlas para gestionar servic
 - Express
 - MongoDB Atlas
 - Mongoose
+- Zod
 - dotenv
 - JavaScript (ES Modules)
 - Express Handlebars
@@ -76,7 +77,7 @@ MongoDB Atlas
 
 ### Router
 
-Define los endpoints y deriva las solicitudes a los controladores correspondientes.
+Define los endpoints y deriva las solicitudes a los controladores correspondientes. También aplica los middlewares de validación.
 
 ### Controller
 
@@ -84,7 +85,7 @@ Recibe las solicitudes HTTP, obtiene parámetros, query strings y datos del body
 
 ### Service
 
-Contiene la lógica de negocio, incluyendo validaciones, filtros y operaciones relacionadas con servicios, reservas y mensajes.
+Contiene la lógica de negocio, incluyendo filtros y operaciones relacionadas con servicios, reservas y mensajes.
 
 ### Repository
 
@@ -106,6 +107,26 @@ Los documentos utilizan identificadores `_id` generados por MongoDB.
 
 Las reservas almacenan referencias a los servicios mediante `ObjectId` y mantienen la cantidad de cada servicio agregado mediante el campo `quantity`.
 
+Las consultas de reservas utilizan `populate()` para recuperar los datos de los servicios asociados.
+
+## Validaciones con Zod
+
+El proyecto utiliza Zod para validar los datos recibidos antes de ejecutar las operaciones correspondientes.
+
+Los esquemas se encuentran en `src/validators/` y el middleware de validación en `src/middlewares/validate.middleware.js`.
+
+Se validan las siguientes operaciones:
+
+- Creación de servicios.
+- Actualización de servicios.
+- Parámetros de consulta de servicios.
+- Creación de reservas.
+- Identificadores de reservas y servicios utilizados en las rutas.
+
+Las validaciones comprueban tipos de datos, campos obligatorios, valores permitidos y formatos de identificadores.
+
+Cuando los datos no cumplen las reglas establecidas, la API responde con HTTP `400 Bad Request` e informa los campos que presentan errores.
+
 ## Endpoints de servicios
 
 ### Obtener todos los servicios
@@ -114,17 +135,64 @@ Las reservas almacenan referencias a los servicios mediante `ObjectId` y mantien
 GET /api/services
 ```
 
-Permite filtrar por categoría:
+Permite realizar consultas avanzadas mediante parámetros opcionales.
+
+| Parámetro | Descripción | Valores |
+|---|---|---|
+| category | Filtrar por categoría | Texto |
+| available | Filtrar por disponibilidad | true / false |
+| page | Número de página | Entero positivo |
+| limit | Resultados por página | Entre 1 y 100 |
+| sortBy | Campo de ordenamiento | name, price, duration, category, createdAt |
+| order | Sentido del ordenamiento | asc / desc |
+
+Ejemplos:
+
+Filtrar por categoría:
 
 ```http
 GET /api/services?category=Salud
 ```
 
-También permite filtrar por disponibilidad:
+Filtrar por disponibilidad:
 
 ```http
 GET /api/services?available=true
 ```
+
+Combinar filtros:
+
+```http
+GET /api/services?category=Salud&available=true
+```
+
+Consultar una página con cinco resultados:
+
+```http
+GET /api/services?page=1&limit=5
+```
+
+Ordenar por precio de mayor a menor:
+
+```http
+GET /api/services?sortBy=price&order=desc
+```
+
+Combinar todos los parámetros:
+
+```http
+GET /api/services?category=Salud&available=true&page=1&limit=5&sortBy=price&order=desc
+```
+
+La respuesta incluye los servicios encontrados y los metadatos de paginación:
+
+- `payload`: resultados de la consulta.
+- `totalResults`: cantidad total de resultados.
+- `page`: página actual.
+- `limit`: cantidad máxima de resultados por página.
+- `totalPages`: cantidad total de páginas.
+- `hasPrevPage`: indica si existe una página anterior.
+- `hasNextPage`: indica si existe una página siguiente.
 
 ### Obtener un servicio por ID
 
@@ -159,7 +227,7 @@ El identificador `_id` se genera automáticamente.
 PUT /api/services/:sid
 ```
 
-Permite actualizar los datos del servicio identificado por `sid`.
+Permite actualizar uno o varios campos del servicio identificado por `sid`.
 
 ### Eliminar un servicio
 
@@ -189,17 +257,25 @@ Ejemplo de body JSON:
 
 Las reservas se crean inicialmente con un array `services` vacío.
 
+Los datos recibidos se validan mediante Zod, incluyendo el formato del correo electrónico y la hora.
+
 ### Obtener una reserva por ID
 
 ```http
 GET /api/bookings/:bid
 ```
 
+La respuesta utiliza `populate()` para incluir los datos de los servicios asociados a la reserva.
+
 ### Agregar un servicio a una reserva
 
 ```http
 POST /api/bookings/:bid/services/:sid
 ```
+
+Los identificadores de la reserva y del servicio se reciben mediante los parámetros de la URL.
+
+No requiere body JSON.
 
 Los servicios asociados a una reserva se almacenan mediante una referencia al servicio y una cantidad:
 
@@ -210,7 +286,7 @@ Los servicios asociados a una reserva se almacenan mediante una referencia al se
 }
 ```
 
-El campo `service` contiene el identificador del servicio en MongoDB. Si se agrega nuevamente el mismo servicio a una reserva, se incrementa el valor de `quantity`.
+Si se agrega nuevamente el mismo servicio a una reserva, se incrementa el valor de `quantity`.
 
 ## Endpoints de mensajes
 
@@ -279,15 +355,13 @@ Las vistas obtienen los datos desde MongoDB a través de la arquitectura del pro
 
 El servidor HTTP comparte la instancia de Express con Socket.io.
 
-Cuando se crea un servicio correctamente mediante:
+Cuando se realizan operaciones sobre los servicios, el servidor emite los siguientes eventos:
 
-```http
-POST /api/services
-```
+- `service:created`: se emite cuando se crea un servicio.
+- `service:updated`: se emite cuando se actualiza un servicio.
+- `service:deleted`: se emite cuando se elimina un servicio.
 
-el servidor emite el evento `service:created` con los datos del nuevo servicio.
-
-El cliente ubicado en `src/public/js/socket.js` escucha ese evento y actualiza las tarjetas de servicios en las vistas sin necesidad de recargar la página.
+El cliente ubicado en `src/public/js/socket.js` escucha estos eventos y actualiza las tarjetas de servicios y disponibilidad en las vistas sin necesidad de recargar la página.
 
 ## Variables de entorno y seguridad
 
@@ -307,10 +381,15 @@ src/
 │   ├── database.js
 │   ├── env.config.js
 │   └── socket.js
+├── middlewares/
+│   └── validate.middleware.js
 ├── models/
 │   ├── service.model.js
 │   ├── booking.model.js
 │   └── message.model.js
+├── validators/
+│   ├── service.validator.js
+│   └── booking.validator.js
 ├── controllers/
 │   ├── services.controller.js
 │   ├── bookings.controller.js

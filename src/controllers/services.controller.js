@@ -5,12 +5,9 @@ const servicesService = new ServicesService();
 
 export const getServices = async (req, res) => {
     try {
-        const { category, available } = req.query;
-
-        const services = await servicesService.getServices({
-            category,
-            available
-        });
+        const services = await servicesService.getServices(
+            req.validatedData.query
+        );
 
         return res.status(200).json(services);
     } catch (error) {
@@ -69,6 +66,8 @@ export const updateService = async (req, res) => {
             });
         }
 
+        getSocketIO().emit('service:updated', updatedService);
+
         return res.status(200).json(updatedService);
     } catch (error) {
         return res.status(400).json({
@@ -87,6 +86,8 @@ export const deleteService = async (req, res) => {
                 error: 'Servicio no encontrado'
             });
         }
+
+        getSocketIO().emit('service:deleted', deletedService);
 
         return res.status(200).json(deletedService);
     } catch (error) {

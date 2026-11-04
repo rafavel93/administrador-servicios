@@ -1,30 +1,47 @@
-
 import ServicesRepository from '../repositories/services.repository.js';
+
 
 class ServicesService {
     constructor() {
         this.repository = new ServicesRepository();
     }
 
-    async getServices(filters = {}) {
-        const { category, available } = filters;
+    async getServices(query = {}) {
+        const {
+            category,
+            available,
+            page = 1,
+            limit = 10,
+            sortBy = 'name',
+            order = 'asc'
+        } = query;
 
-        let services = await this.repository.getAll();
+        const filters = {};
 
         if (category) {
-            services = services.filter(
-                service =>
-                    service.category?.toLowerCase() === category.toLowerCase()
+            const escapedCategory = category.replace(
+                /[.*+?^${}()|[\]\\]/g,
+                '\\$&'
             );
+
+            filters.category = {
+                $regex: `^${escapedCategory}$`,
+                $options: 'i'
+            };
         }
 
         if (available !== undefined) {
-            services = services.filter(
-                service => service.available === (available === 'true')
-            );
+            filters.available = available === 'true';
         }
 
-        return services;
+        const options = {
+            page,
+            limit,
+            sortBy,
+            order
+        };
+
+        return await this.repository.getAll(filters, options);
     }
 
     async getServiceById(id) {
