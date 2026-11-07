@@ -1,31 +1,41 @@
-# API REST de Servicios y Reservas
+# Administrador de Servicios y Reservas
 
 API REST desarrollada con Node.js, Express y MongoDB Atlas para gestionar servicios, reservas y mensajes. Utiliza Mongoose como ODM, Zod para la validación de datos y una arquitectura en capas. Incorpora vistas renderizadas con Express Handlebars y actualizaciones en tiempo real mediante Socket.io.
 
-## Tecnologías
+## Tecnologías utilizadas
 
 - Node.js
 - Express
 - MongoDB Atlas
 - Mongoose
 - Zod
-- dotenv
-- JavaScript (ES Modules)
 - Express Handlebars
 - Socket.io
-- HTML y CSS
+- dotenv
 
 ## Instalación
 
-Clonar el repositorio e instalar las dependencias:
+Clonar el repositorio:
 
 ```bash
 git clone https://github.com/rafavel93/administrador-servicios.git
+```
+
+Ingresar al directorio:
+
+```bash
 cd administrador-servicios
+```
+
+Instalar las dependencias:
+
+```bash
 npm install
 ```
 
-Crear un archivo `.env` en la raíz del proyecto con las siguientes variables:
+## Variables de entorno
+
+Crear un archivo `.env` en la raíz del proyecto, tomando como referencia `.env.example`.
 
 ```env
 PORT=8080
@@ -33,9 +43,9 @@ NODE_ENV=development
 MONGO_URI=mongodb+srv://<db_username>:<db_password>@<cluster-url>/administrador-servicios
 ```
 
-Reemplazar los valores de ejemplo de `MONGO_URI` por la URI de conexión real de MongoDB Atlas. No compartir ni subir el archivo `.env` al repositorio.
+Reemplazar los valores de conexión por las credenciales correspondientes de MongoDB Atlas.
 
-El archivo `.env.example` contiene una plantilla de configuración para otros desarrolladores.
+**Importante:** el archivo `.env` contiene información sensible y no debe subirse al repositorio. Está incluido en `.gitignore`.
 
 ## Ejecución
 
@@ -45,85 +55,137 @@ Iniciar el servidor:
 npm start
 ```
 
-Ejecutar en modo desarrollo:
+Iniciar el servidor en modo desarrollo:
 
 ```bash
 npm run dev
 ```
 
-La API estará disponible en:
+Por defecto, la aplicación utiliza el puerto `8080`.
 
-`http://localhost:8080`
+La conexión con MongoDB Atlas se realiza antes de iniciar el servidor HTTP.
 
-El servidor establece la conexión con MongoDB Atlas antes de comenzar a escuchar solicitudes.
+## Arquitectura del proyecto
 
-## Arquitectura
-
-El proyecto utiliza una arquitectura en capas:
+El proyecto utiliza una arquitectura en capas para separar responsabilidades y facilitar el mantenimiento del código.
 
 ```text
-Router
-  ↓
-Controller
-  ↓
-Service
-  ↓
-Repository
-  ↓
-DAO
-  ↓
-MongoDB Atlas
+src/
+├── config/
+│   ├── database.js
+│   ├── env.config.js
+│   └── socket.js
+├── controllers/
+│   ├── bookings.controller.js
+│   ├── messages.controller.js
+│   ├── services.controller.js
+│   └── views.controller.js
+├── dao/
+│   ├── bookings.dao.js
+│   ├── messages.dao.js
+│   └── services.dao.js
+├── middlewares/
+│   └── validate.middleware.js
+├── models/
+│   ├── booking.model.js
+│   ├── message.model.js
+│   └── service.model.js
+├── public/
+│   ├── css/
+│   │   └── styles.css
+│   └── js/
+│       └── socket.js
+├── repositories/
+│   ├── bookings.repository.js
+│   ├── messages.repository.js
+│   └── services.repository.js
+├── routes/
+│   ├── bookings.router.js
+│   ├── messages.router.js
+│   ├── services.router.js
+│   └── views.router.js
+├── services/
+│   ├── bookings.service.js
+│   ├── messages.service.js
+│   └── services.service.js
+├── validators/
+│   ├── booking.validator.js
+│   └── service.validator.js
+├── views/
+│   ├── layouts/
+│   │   └── main.handlebars
+│   ├── availability.handlebars
+│   └── services.handlebars
+├── app.js
+└── server.js
 ```
 
-### Router
+### Responsabilidades de las capas
 
-Define los endpoints y deriva las solicitudes a los controladores correspondientes. También aplica los middlewares de validación.
+- **Routes:** definen los endpoints y conectan las rutas con los controladores.
+- **Controllers:** reciben las solicitudes HTTP y gestionan las respuestas.
+- **Services:** contienen la lógica de negocio.
+- **Repositories:** centralizan el acceso a los datos y delegan las operaciones en los DAO.
+- **DAO:** ejecutan las operaciones de persistencia mediante Mongoose.
+- **Models:** definen los esquemas y modelos de MongoDB.
+- **Validators:** contienen los esquemas de validación con Zod.
+- **Middlewares:** ejecutan validaciones antes de llegar a los controladores.
+- **Config:** contiene la configuración de la base de datos, variables de entorno y Socket.io.
 
-### Controller
-
-Recibe las solicitudes HTTP, obtiene parámetros, query strings y datos del body, invoca los servicios y devuelve las respuestas HTTP adecuadas.
+## Modelos de datos
 
 ### Service
 
-Contiene la lógica de negocio, incluyendo filtros y operaciones relacionadas con servicios, reservas y mensajes.
+Representa los servicios disponibles en el sistema.
 
-### Repository
+Campos principales:
 
-Actúa como intermediario entre los servicios y los DAO. Centraliza el acceso a las operaciones de persistencia y la validación de los identificadores de MongoDB.
+- `name`: nombre del servicio.
+- `description`: descripción.
+- `duration`: duración en minutos.
+- `price`: precio.
+- `category`: categoría.
+- `available`: disponibilidad.
 
-### DAO
+### Booking
 
-Es la capa encargada de interactuar con MongoDB mediante modelos de Mongoose. Implementa las operaciones de acceso a datos.
+Representa una reserva realizada por un cliente.
 
-## Modelos
+Campos principales:
 
-Los modelos se encuentran en `src/models/`:
-
-- `service.model.js`: define la estructura de los servicios.
-- `booking.model.js`: define la estructura de las reservas y sus servicios asociados.
-- `message.model.js`: define la estructura de los mensajes.
-
-Los documentos utilizan identificadores `_id` generados por MongoDB.
+- `clientName`: nombre del cliente.
+- `clientEmail`: correo electrónico.
+- `date`: fecha de la reserva.
+- `time`: horario.
+- `status`: estado de la reserva.
+- `services`: servicios asociados a la reserva.
 
 Las reservas almacenan referencias a los servicios mediante `ObjectId` y mantienen la cantidad de cada servicio agregado mediante el campo `quantity`.
 
+Los servicios asociados se almacenan como referencias, no como objetos completos.
+
 Las consultas de reservas utilizan `populate()` para recuperar los datos de los servicios asociados.
+
+### Message
+
+Representa los mensajes almacenados en el sistema.
 
 ## Validaciones con Zod
 
-El proyecto utiliza Zod para validar los datos recibidos antes de ejecutar las operaciones correspondientes.
+El proyecto utiliza Zod para validar los datos recibidos antes de ejecutar operaciones sobre la base de datos.
 
 Los esquemas se encuentran en `src/validators/` y el middleware de validación en `src/middlewares/validate.middleware.js`.
 
 Se validan las siguientes operaciones:
 
-- Creación de servicios.
-- Actualización de servicios.
+- Creación y actualización de servicios.
 - Parámetros de consulta de servicios.
+- Identificadores de servicios (`sid`) en las rutas GET, PUT y DELETE.
 - Creación de reservas.
-- Identificadores de reservas y servicios utilizados en las rutas.
+- Identificadores de reservas (`bid`) y servicios (`sid`) utilizados en las rutas de reservas.
+- Asociación de servicios a reservas.
 
-Las validaciones comprueban tipos de datos, campos obligatorios, valores permitidos y formatos de identificadores.
+Las validaciones comprueban tipos de datos, campos obligatorios, valores permitidos y formatos de identificadores ObjectId de MongoDB.
 
 Cuando los datos no cumplen las reglas establecidas, la API responde con HTTP `400 Bad Request` e informa los campos que presentan errores.
 
@@ -144,7 +206,7 @@ Permite realizar consultas avanzadas mediante parámetros opcionales.
 | page | Número de página | Entero positivo |
 | limit | Resultados por página | Entre 1 y 100 |
 | sortBy | Campo de ordenamiento | name, price, duration, category, createdAt |
-| order | Sentido del ordenamiento | asc / desc |
+| order | Orden de los resultados | asc / desc |
 
 Ejemplos:
 
@@ -166,7 +228,7 @@ Combinar filtros:
 GET /api/services?category=Salud&available=true
 ```
 
-Consultar una página con cinco resultados:
+Consultar una página específica:
 
 ```http
 GET /api/services?page=1&limit=5
@@ -178,15 +240,15 @@ Ordenar por precio de mayor a menor:
 GET /api/services?sortBy=price&order=desc
 ```
 
-Combinar todos los parámetros:
+Combinar filtros, paginación y ordenamiento:
 
 ```http
 GET /api/services?category=Salud&available=true&page=1&limit=5&sortBy=price&order=desc
 ```
 
-La respuesta incluye los servicios encontrados y los metadatos de paginación:
+La respuesta incluye:
 
-- `payload`: resultados de la consulta.
+- `payload`: servicios obtenidos.
 - `totalResults`: cantidad total de resultados.
 - `page`: página actual.
 - `limit`: cantidad máxima de resultados por página.
@@ -199,6 +261,8 @@ La respuesta incluye los servicios encontrados y los metadatos de paginación:
 ```http
 GET /api/services/:sid
 ```
+
+Valida el identificador `sid` mediante Zod antes de consultar la base de datos.
 
 ### Crear un servicio
 
@@ -229,11 +293,15 @@ PUT /api/services/:sid
 
 Permite actualizar uno o varios campos del servicio identificado por `sid`.
 
+Valida el identificador y los datos recibidos antes de ejecutar la actualización.
+
 ### Eliminar un servicio
 
 ```http
 DELETE /api/services/:sid
 ```
+
+Valida el identificador `sid` mediante Zod antes de ejecutar la eliminación.
 
 ## Endpoints de reservas
 
@@ -249,9 +317,9 @@ Ejemplo de body JSON:
 {
   "clientName": "Rafael",
   "clientEmail": "rafa@example.com",
-  "date": "2026-10-10",
+  "date": "2026-11-10",
   "time": "10:00",
-  "status": "pending"
+  "status": "pendiente"
 }
 ```
 
@@ -265,6 +333,8 @@ Los datos recibidos se validan mediante Zod, incluyendo el formato del correo el
 GET /api/bookings/:bid
 ```
 
+Permite consultar una reserva utilizando su identificador.
+
 La respuesta utiliza `populate()` para incluir los datos de los servicios asociados a la reserva.
 
 ### Agregar un servicio a una reserva
@@ -275,22 +345,15 @@ POST /api/bookings/:bid/services/:sid
 
 Los identificadores de la reserva y del servicio se reciben mediante los parámetros de la URL.
 
-No requiere body JSON.
+Ambos identificadores se validan mediante Zod.
 
-Los servicios asociados a una reserva se almacenan mediante una referencia al servicio y una cantidad:
+La asociación no requiere datos en el body. Se puede enviar un objeto vacío (`{}`).
 
-```json
-{
-  "service": "671a12345678901234567890",
-  "quantity": 1
-}
-```
+La cantidad inicial del servicio se establece automáticamente en `1`. Si se agrega nuevamente el mismo servicio a una reserva, se incrementa el valor de `quantity`.
 
-Si se agrega nuevamente el mismo servicio a una reserva, se incrementa el valor de `quantity`.
+Las consultas posteriores utilizan `populate()` para recuperar la información completa de los servicios relacionados.
 
 ## Endpoints de mensajes
-
-Los mensajes se almacenan en MongoDB Atlas mediante el modelo `Message` de Mongoose.
 
 ### Obtener todos los mensajes
 
@@ -314,12 +377,14 @@ Ejemplo de body JSON:
 
 ```json
 {
-  "user": "Usuario de prueba",
-  "message": "Contenido del mensaje"
+  "user": "Rafael",
+  "message": "Consulta sobre un servicio"
 }
 ```
 
-Los campos `user` y `message` son obligatorios. Si faltan o están vacíos, la API responde con un error HTTP `400 Bad Request`.
+Los campos `user` y `message` son obligatorios y deben contener texto no vacío. Ambos valores se limpian con `trim()` antes de almacenarse.
+
+La API responde con HTTP `201 Created` cuando el mensaje se crea correctamente. Los identificadores `mid` se validan como ObjectId en las consultas y eliminaciones. Si el mensaje no existe, responde con HTTP `404 Not Found`.
 
 ### Eliminar un mensaje
 
@@ -327,11 +392,11 @@ Los campos `user` y `message` son obligatorios. Si faltan o están vacíos, la A
 DELETE /api/messages/:mid
 ```
 
-La API valida los identificadores y devuelve una respuesta HTTP `404 Not Found` cuando el mensaje no existe.
-
 ## Vistas con Handlebars
 
-El proyecto incorpora vistas renderizadas desde el servidor mediante Express Handlebars.
+El proyecto incorpora vistas renderizadas mediante Express Handlebars.
+
+Las vistas disponibles son:
 
 ### Servicios
 
@@ -339,7 +404,7 @@ El proyecto incorpora vistas renderizadas desde el servidor mediante Express Han
 GET /views/services
 ```
 
-Muestra los servicios registrados en MongoDB con su nombre, descripción, duración, precio, categoría y disponibilidad.
+Muestra los servicios registrados en el sistema.
 
 ### Disponibilidad
 
@@ -347,87 +412,32 @@ Muestra los servicios registrados en MongoDB con su nombre, descripción, duraci
 GET /views/availability
 ```
 
-Muestra los servicios que tienen el campo `available` en `true`.
+Muestra los servicios que se encuentran disponibles.
 
-Las vistas obtienen los datos desde MongoDB a través de la arquitectura del proyecto y no dependen de datos de ejemplo escritos directamente en las plantillas.
+Las vistas utilizan un layout principal y estilos CSS propios.
 
-## Comunicación en tiempo real con Socket.io
+## Actualizaciones en tiempo real con Socket.io
 
-El servidor HTTP comparte la instancia de Express con Socket.io.
+El proyecto utiliza Socket.io para comunicar los cambios realizados sobre los servicios a los clientes conectados.
 
-Cuando se realizan operaciones sobre los servicios, el servidor emite los siguientes eventos:
+Se implementan los siguientes eventos:
 
-- `service:created`: se emite cuando se crea un servicio.
-- `service:updated`: se emite cuando se actualiza un servicio.
-- `service:deleted`: se emite cuando se elimina un servicio.
+- `service:created`: informa la creación de un servicio.
+- `service:updated`: informa la actualización de un servicio.
+- `service:deleted`: informa la eliminación de un servicio.
 
-El cliente ubicado en `src/public/js/socket.js` escucha estos eventos y actualiza las tarjetas de servicios y disponibilidad en las vistas sin necesidad de recargar la página.
+Las vistas reciben estos eventos y actualizan dinámicamente las listas de servicios y disponibilidad sin necesidad de recargar la página.
 
-## Variables de entorno y seguridad
+La implementación del cliente se encuentra en `src/public/js/socket.js`.
 
-- `PORT`: puerto en el que escucha el servidor.
-- `NODE_ENV`: entorno de ejecución.
-- `MONGO_URI`: URI de conexión a MongoDB Atlas.
+## Seguridad y configuración
 
-Las credenciales se mantienen en el archivo `.env`, que no debe publicarse en el repositorio. El archivo `.env.example` sirve como plantilla para configurar el entorno local.
-
-## Estructura del proyecto
-
-```text
-src/
-├── app.js
-├── server.js
-├── config/
-│   ├── database.js
-│   ├── env.config.js
-│   └── socket.js
-├── middlewares/
-│   └── validate.middleware.js
-├── models/
-│   ├── service.model.js
-│   ├── booking.model.js
-│   └── message.model.js
-├── validators/
-│   ├── service.validator.js
-│   └── booking.validator.js
-├── controllers/
-│   ├── services.controller.js
-│   ├── bookings.controller.js
-│   ├── messages.controller.js
-│   └── views.controller.js
-├── services/
-│   ├── services.service.js
-│   ├── bookings.service.js
-│   └── messages.service.js
-├── repositories/
-│   ├── services.repository.js
-│   ├── bookings.repository.js
-│   └── messages.repository.js
-├── dao/
-│   ├── services.dao.js
-│   ├── bookings.dao.js
-│   └── messages.dao.js
-├── routes/
-│   ├── services.router.js
-│   ├── bookings.router.js
-│   ├── messages.router.js
-│   └── views.router.js
-├── views/
-│   ├── layouts/
-│   │   └── main.handlebars
-│   ├── services.handlebars
-│   └── availability.handlebars
-└── public/
-    ├── css/
-    │   └── styles.css
-    └── js/
-        └── socket.js
-```
-
-## Persistencia
-
-La persistencia se realiza mediante MongoDB Atlas y Mongoose. La URI de conexión se configura mediante `MONGO_URI`, y las operaciones de acceso a datos se implementan en los DAO correspondientes.
+- Las variables de entorno se gestionan mediante dotenv.
+- La configuración verifica la existencia de las variables requeridas.
+- Las credenciales de MongoDB Atlas se mantienen fuera del repositorio.
+- `.env` y `node_modules/` están excluidos mediante `.gitignore`.
+- Se incluye `.env.example` como referencia para configurar el entorno local.
 
 ## Autor
 
-Rafael Velázquez
+Proyecto desarrollado como entrega final de **Programación Backend I: Desarrollo Avanzado de Backend**.

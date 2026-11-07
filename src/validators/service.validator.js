@@ -51,3 +51,12 @@ export const serviceQuerySchema = z.object({
 
     order: z.enum(['asc', 'desc']).default('asc')
 }).strict();
+
+const serviceObjectIdSchema = z.string().regex(
+    /^[a-fA-F0-9]{24}$/,
+    'El identificador debe ser un ObjectId válido'
+);
+
+export const serviceIdParamsSchema = z.object({
+    sid: serviceObjectIdSchema
+});

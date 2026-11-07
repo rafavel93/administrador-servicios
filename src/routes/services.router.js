@@ -13,19 +13,25 @@ import { validate } from '../middlewares/validate.middleware.js';
 import {
     createServiceSchema,
     updateServiceSchema,
-    serviceQuerySchema
+    serviceQuerySchema,
+    serviceIdParamsSchema
 } from '../validators/service.validator.js';
 
 const router = Router();
 
 router.get('/', validate(serviceQuerySchema, 'query'), getServices);
 
-router.get('/:sid', getServiceById);
+router.get('/:sid', validate(serviceIdParamsSchema, 'params'), getServiceById);
 
 router.post('/', validate(createServiceSchema), createService);
 
-router.put('/:sid', validate(updateServiceSchema), updateService);
+router.put(
+    '/:sid',
+    validate(serviceIdParamsSchema, 'params'),
+    validate(updateServiceSchema),
+    updateService
+);
 
-router.delete('/:sid', deleteService);
+router.delete('/:sid', validate(serviceIdParamsSchema, 'params'), deleteService);
 
 export default router;
